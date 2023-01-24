@@ -20,6 +20,16 @@ class App {
 
   constructor() {
     this._getPosition();
+
+    form.addEventListener("submit", this._newWorkOut);
+
+    //toggle cycling and running form as per the selected option
+    inputType.addEventListener("change", function () {
+      inputElevation
+        .closest(".form__row")
+        .classList.toggle("form__row--hidden");
+      inputCadence.closest(".form__row").classList.toggle("form__row--hidden");
+    });
   }
 
   _getPosition() {
@@ -62,38 +72,30 @@ class App {
 
   _toggleElevationField() {}
 
-  _newWorkOut() {}
+  _newWorkOut(e) {
+    e.preventDefault();
+
+    //clearing the input fields
+    inputDistance.value = inputCadence.value = inputDuration.value = "";
+
+    //display marker
+    const { lat, lng } = mapEvent.latlng;
+
+    L.marker([lat, lng])
+      .addTo(this.#map)
+
+      .bindPopup(
+        L.popup({
+          maxWidth: 250,
+          minWidth: 100,
+          autoClose: false,
+          closeOnClick: false,
+          className: "running-popup",
+        })
+      )
+      .setPopupContent("cycling")
+      .openPopup();
+  }
 }
 
 const app = new App();
-
-form.addEventListener("submit", function (e) {
-  e.preventDefault();
-
-  //clearing the input fields
-  inputDistance.value = inputCadence.value = inputDuration.value = "";
-
-  //display marker
-  const { lat, lng } = mapEvent.latlng;
-
-  L.marker([lat, lng])
-    .addTo(map)
-
-    .bindPopup(
-      L.popup({
-        maxWidth: 250,
-        minWidth: 100,
-        autoClose: false,
-        closeOnClick: false,
-        className: "running-popup",
-      })
-    )
-    .setPopupContent("cycling")
-    .openPopup();
-});
-
-//toggle cycling and running form as per the selected option
-inputType.addEventListener("change", function () {
-  inputElevation.closest(".form__row").classList.toggle("form__row--hidden");
-  inputCadence.closest(".form__row").classList.toggle("form__row--hidden");
-});
