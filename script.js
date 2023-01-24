@@ -14,12 +14,49 @@ const inputElevation = document.querySelector(".form__input--elevation");
 let map, mapEvent;
 
 //OOP
-class app {
-  constructor() {}
+class App {
+  #map;
+  #mapEvent;
 
-  _getPosition() {}
+  constructor() {
+    this._getPosition();
+  }
 
-  _loadMap() {}
+  _getPosition() {
+    if (navigator.geolocation)
+      //current location Map render
+      navigator.geolocation.getCurrentPosition(
+        this._loadMap.bind(this),
+        function () {
+          alert("could not get your position");
+        }
+      );
+  }
+
+  _loadMap(position) {
+    const { latitude, longitude } = position.coords;
+    console.log(latitude);
+    console.log(longitude);
+    console.log(`https://www.google.com/maps/@${latitude},${longitude}`);
+
+    const coords = [latitude, longitude];
+
+    this.#map = L.map("map").setView(coords, 13);
+
+    L.tileLayer("https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png", {
+      attribution:
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    }).addTo(this.#map);
+
+    //handling clicks on map
+    console.log("this", this);
+    this.#map.on("click", function (mapE) {
+      this.#mapEvent = mapE;
+      // console.log(this.#mapEvent);
+      form.classList.remove("hidden");
+      inputDistance.focus();
+    });
+  }
 
   _showForm() {}
 
@@ -28,35 +65,7 @@ class app {
   _newWorkOut() {}
 }
 
-//current location Map render
-navigator.geolocation.getCurrentPosition(
-  function (position) {
-    const { latitude, longitude } = position.coords;
-    console.log(latitude);
-    console.log(longitude);
-    console.log(`https://www.google.com/maps/@${latitude},${longitude}`);
-
-    const coords = [latitude, longitude];
-
-    map = L.map("map").setView(coords, 13);
-
-    L.tileLayer("https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png", {
-      attribution:
-        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-    }).addTo(map);
-
-    //handling clicks on map
-    map.on("click", function (mapE) {
-      mapEvent = mapE;
-      console.log(mapEvent);
-      form.classList.remove("hidden");
-      inputDistance.focus();
-    });
-  },
-  function () {
-    alert("could not get your position");
-  }
-);
+const app = new App();
 
 form.addEventListener("submit", function (e) {
   e.preventDefault();
