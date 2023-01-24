@@ -13,6 +13,21 @@ const inputElevation = document.querySelector(".form__input--elevation");
 
 let map, mapEvent;
 
+//OOP
+class app {
+  constructor() {}
+
+  _getPosition() {}
+
+  _loadMap() {}
+
+  _showForm() {}
+
+  _toggleElevationField() {}
+
+  _newWorkOut() {}
+}
+
 //current location Map render
 navigator.geolocation.getCurrentPosition(
   function (position) {
@@ -54,6 +69,7 @@ form.addEventListener("submit", function (e) {
 
   L.marker([lat, lng])
     .addTo(map)
+
     .bindPopup(
       L.popup({
         maxWidth: 250,
