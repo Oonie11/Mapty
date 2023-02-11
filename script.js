@@ -14,22 +14,61 @@ const inputElevation = document.querySelector(".form__input--elevation");
 let map, mapEvent;
 
 //OOP
+
+class workOut {
+  date = new Date();
+  id = (Date.now() + "").slice(-10);
+
+  constructor(coords, distance, duration) {
+    this.coords = coords; // [lat,lng]
+    this.distance = distance; //in km
+    this.duration = duration; //in min
+  }
+}
+
+class running extends workOut {
+  constructor(coords, distance, duration, cadence) {
+    super(coords, distance, duration);
+    this.cadence = cadence;
+    this.calcPace();
+  }
+
+  calcPace() {
+    // min/km
+    this.pace = this.duration / this.distance;
+    return this.pace;
+  }
+}
+class cycling extends workOut {
+  constructor(coords, distance, duration, elevationGain) {
+    super(coords, distance, duration);
+    this.elevationGain = elevationGain;
+    this.calcSpeed();
+  }
+
+  calcSpeed() {
+    // km/h
+    this.speed = this.distance / (this.duration / 60);
+    return this.speed;
+  }
+}
+
+// const run1 = new running([39, -12], 5.2, 24, 178);
+// const cycling1 = new cycling([39, -12], 27, 95, 523);
+// console.log(run1, cycling1);
+
+/////////////////////////////////////////////////////////
+// Application Architecture
 class App {
   #map;
   #mapEvent;
 
   constructor() {
     this._getPosition();
-
-    form.addEventListener("submit", this._newWorkOut);
+    form.addEventListener("submit", this._newWorkOut.bind(this));
 
     //toggle cycling and running form as per the selected option
-    inputType.addEventListener("change", function () {
-      inputElevation
-        .closest(".form__row")
-        .classList.toggle("form__row--hidden");
-      inputCadence.closest(".form__row").classList.toggle("form__row--hidden");
-    });
+    inputType.addEventListener("change", this._toggleElevationField);
   }
 
   _getPosition() {
@@ -60,17 +99,20 @@ class App {
 
     //handling clicks on map
     console.log("this", this);
-    this.#map.on("click", function (mapE) {
-      this.#mapEvent = mapE;
-      // console.log(this.#mapEvent);
-      form.classList.remove("hidden");
-      inputDistance.focus();
-    });
+    this.#map.on("click", this._showForm.bind(this));
   }
 
-  _showForm() {}
+  _showForm(mapE) {
+    this.#mapEvent = mapE;
+    // console.log(this.#mapEvent);
+    form.classList.remove("hidden");
+    inputDistance.focus();
+  }
 
-  _toggleElevationField() {}
+  _toggleElevationField() {
+    inputElevation.closest(".form__row").classList.toggle("form__row--hidden");
+    inputCadence.closest(".form__row").classList.toggle("form__row--hidden");
+  }
 
   _newWorkOut(e) {
     e.preventDefault();
@@ -79,7 +121,7 @@ class App {
     inputDistance.value = inputCadence.value = inputDuration.value = "";
 
     //display marker
-    const { lat, lng } = mapEvent.latlng;
+    const { lat, lng } = this.#mapEvent.latlng;
 
     L.marker([lat, lng])
       .addTo(this.#map)
