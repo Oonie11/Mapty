@@ -83,11 +83,14 @@ class App {
   constructor() {
     // Get user's position
     this._getPosition();
-    form.addEventListener("submit", this._newWorkOut.bind(this));
 
+    //get data from local storage
+    this._getLocalStorage();
+
+    //attach event handler
+    form.addEventListener("submit", this._newWorkOut.bind(this));
     //toggle cycling and running form as per the selected option
     inputType.addEventListener("change", this._toggleElevationField);
-
     containerWorkouts.addEventListener("click", this._moveToPopup.bind(this));
   }
 
@@ -104,8 +107,6 @@ class App {
 
   _loadMap(position) {
     const { latitude, longitude } = position.coords;
-    console.log(latitude);
-    console.log(longitude);
     console.log(`https://www.google.com/maps/@${latitude},${longitude}`);
 
     const coords = [latitude, longitude];
@@ -121,8 +122,11 @@ class App {
     }).addTo(this.#map);
 
     //handling clicks on map
-    console.log("this", this);
     this.#map.on("click", this._showForm.bind(this));
+
+    this.#workouts.forEach((work) => {
+      this._renderWorkoutMarker(work);
+    });
   }
 
   _showForm(mapE) {
@@ -204,6 +208,9 @@ class App {
 
     //hide form + clearing the input fields
     this._hideForm();
+
+    //set local storage to all workouts
+    this._setLocalStorage();
   }
 
   _renderWorkoutMarker(workout) {
@@ -282,12 +289,30 @@ class App {
       (work) => work.id === workoutEl.dataset.id
     );
 
-    console.log(workout);
-
     this.#map.setView(workout.coords, this.#mapZoomLevel);
 
     //using the public interface
-    workout.click();
+    // workout.click();
+  }
+
+  _setLocalStorage() {
+    localStorage.setItem("workouts", JSON.stringify(this.#workouts));
+  }
+  _getLocalStorage() {
+    const data = JSON.parse(localStorage.getItem("workouts"));
+
+    if (!data) return;
+
+    this.#workouts = data;
+
+    this.#workouts.forEach((work) => {
+      this._renderWorkout(work);
+    });
+  }
+
+  reset() {
+    localStorage.removeItem("workouts");
+    location.reload();
   }
 }
 
